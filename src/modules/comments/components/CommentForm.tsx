@@ -5,9 +5,10 @@ import { createComment } from "../actions/createComment";
 
 type CommentFormProps = {
   postID: number;
+  postSlug: string;
 };
 
-export default function CommentForm({ postID }: CommentFormProps) {
+export default function CommentForm({ postID, postSlug }: CommentFormProps) {
   const [state, action, pending] = useActionState(createComment, { ok: false });
 
   return (
@@ -17,6 +18,7 @@ export default function CommentForm({ postID }: CommentFormProps) {
     >
       {state.message && <div className="text-red-400">{state.message}</div>}
       <input name="postID" value={postID} hidden readOnly />
+      <input name="slug" value={postSlug} hidden readOnly />
 
       <div className="flex flex-col space-y-2">
         <label htmlFor="content" className="text-sm font-medium text-gray-700">

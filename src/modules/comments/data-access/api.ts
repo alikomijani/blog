@@ -5,7 +5,8 @@ export function getComments(postID: number): Promise<CommentListResponse> {
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/comments?postID=${postID}`,
     {
       next: {
-        revalidate: 5, // هر ۳ ثانیه یک بار رفرش شود
+        revalidate: 5,
+        tags: [`comments-${postID}`],
       },
     }
   ).then((r) => r.json());

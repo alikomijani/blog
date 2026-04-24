@@ -21,7 +21,7 @@ export default function CommentsSection({
   return (
     <div className="mt-12 border-t pt-8">
       {accessToken ? (
-        <CommentForm postID={postID} />
+        <CommentForm postID={postID} postSlug={postSlug} />
       ) : (
         <div className="p-2 text-center my-5">
           <Link href={`/auth/login?nextPath=/posts/${postSlug}`}>

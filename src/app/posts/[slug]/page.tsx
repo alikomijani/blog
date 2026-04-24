@@ -13,6 +13,9 @@ export default async function Page(props: {
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${slug}`,
     {
       cache: "force-cache",
+      next: {
+        tags: [`post-${slug}`],
+      },
     }
   );
 

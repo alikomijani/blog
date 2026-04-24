@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { cookies } from "next/headers";
 
 export async function createComment(
@@ -8,6 +8,7 @@ export async function createComment(
   formData: FormData
 ) {
   const postID = formData.get("postID");
+  const slug = formData.get("slug");
   const content = formData.get("content");
 
   if (!postID || !content) {
@@ -33,6 +34,7 @@ export async function createComment(
   }
 
   // اگر صفحه نیاز به رفرش SSR دارد
-  revalidatePath(`/posts/${postID}`);
+  updateTag(`comments-${postID}`);
+  revalidatePath(`/posts/${slug}`); // آدرس صفحات با slug هست
   return { ok: true };
 }
