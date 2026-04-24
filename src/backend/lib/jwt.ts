@@ -20,7 +20,6 @@ export function createAccessToken(userID: number) {
     expiresIn: "10m",
   });
 }
-
 export function createRefreshToken(userID: number) {
   return jwt.sign({ userID }, process.env.JWT_REFRESH_SECRET!, {
     expiresIn: "7d",

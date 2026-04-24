@@ -1,10 +1,9 @@
-import Navbar from "@/shared/components/navbar";
 import { PropsWithChildren } from "react";
 
 export default function Layout({ children }: PropsWithChildren) {
   return (
     <div>
-      <Navbar />
+      <h2>new Layouyt</h2>
       {children}
     </div>
   );
