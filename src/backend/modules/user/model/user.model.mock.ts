@@ -31,6 +31,10 @@ class UserModelMock implements UserModelInterface {
     users[index] = updatedUser;
     return updatedUser;
   }
+  async getUserByID(userID: number): Promise<User | undefined> {
+    const user = users.find((u) => u.id === userID);
+    return user;
+  }
 }
 
 export default UserModelMock;

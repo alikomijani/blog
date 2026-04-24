@@ -1,6 +1,6 @@
 // user.controller.ts
 
-import { createToken } from "@/backend/lib/jwt";
+import { createAccessToken, createRefreshToken } from "@/backend/lib/jwt";
 
 export class UserController {
   hasher: HasherInterface;
@@ -33,7 +33,6 @@ export class UserController {
     const { password, ...restUserData } = user;
     return restUserData;
   }
-
   async login(data: { email: string; password: string }) {
     const user = await this.userModel.getUserByEmail(data.email);
 
@@ -47,10 +46,15 @@ export class UserController {
       throw new Error("Invalid credentials");
     }
 
-    const token = createToken(user.id);
+    const accessToken = createAccessToken(user.id);
+    const refreshToken = createRefreshToken(user.id);
 
     const { password, ...restUserData } = user;
-    return { user: restUserData, token };
+    return { user: restUserData, accessToken, refreshToken };
+  }
+  async getUserProfile(userID: number) {
+    const user = this.userModel.getUserByID(userID);
+    return user;
   }
 }
 
@@ -61,6 +65,7 @@ export interface HasherInterface {
 
 export interface UserModelInterface {
   getUserByEmail: (email: string) => Promise<undefined | User>;
+  getUserByID: (userID: number) => Promise<undefined | User>;
   createUser: (user: CreateUserDto) => Promise<User>;
   updateUser: (id: number, newUserData: CreateUserDto) => Promise<User>;
 }

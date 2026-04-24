@@ -1,16 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import MuiThemeRegistry from "@/theme/ThemeProvider";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -23,11 +14,33 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="fa" dir="rtl">
+      <body>
+        <MuiThemeRegistry>
+          <nav>
+            <div className="max-w-3xl mx-auto p-6 space-y-6">
+              <ul className="flex gap-3">
+                <li>
+                  <Link href={"/"} className="p-2">
+                    خانه
+                  </Link>
+                </li>
+                <li>
+                  <Link href={"/posts"} className="p-2">
+                    مقالات
+                  </Link>
+                </li>
+                <li>
+                  <Link href={"/profile"} className="p-2">
+                    پروفایل
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </nav>
+          {children}
+        </MuiThemeRegistry>
+      </body>
     </html>
   );
 }

@@ -6,7 +6,7 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     // کنترلر رو میسازه و بهش میگه تو حالت ماک هستی
-    const userController = await newUserController("Mock");
+    const userController = await newUserController();
 
     // اینجا فانکشن رجیستر کاربر فراخوانی میشه
     const user = await userController.register(body);
@@ -18,11 +18,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: error.message }, { status: 400 });
   }
 }
-
-// front
-const registerUserData = { username: "ali" };
-
-const res = fetch("https://digi.com/api/auth/register", {
-  method: "POST",
-  body: JSON.stringify(registerUserData),
-});

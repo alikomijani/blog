@@ -47,6 +47,10 @@ class UserModelMongo implements UserModelInterface {
 
     return updated;
   }
+  async getUserByID(userID: number): Promise<User | undefined> {
+    const user = await UserModel.findOne({ id: userID });
+    return user?.toObject();
+  }
 }
 
 export default UserModelMongo;
