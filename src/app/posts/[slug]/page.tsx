@@ -1,7 +1,6 @@
 import { Post } from "@/backend/modules/posts/controllers/post.controller";
-import CommentsSection from "./CommentsSectionServer";
-import { Suspense } from "react";
-import { getComments } from "./api";
+import { getComments } from "@/modules/comments/data-access/api";
+import SinglePost from "@/templates/posts/SinglePost";
 
 export default async function Page(props: {
   params: Promise<{ slug: string }>;
@@ -14,7 +13,7 @@ export default async function Page(props: {
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${slug}`,
     {
       cache: "force-cache",
-    },
+    }
   );
 
   if (!res.ok) {
@@ -28,27 +27,5 @@ export default async function Page(props: {
   const post: Post = await res.json();
   const commentsPromise = getComments(post.id);
 
-  return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold">{post.title}</h1>
-
-      <div className="text-gray-500 text-sm">
-        نویسنده: {post.author.firstName} {post.author.lastName}
-      </div>
-
-      <div className="prose prose-lg leading-8">{post.content}</div>
-
-      <div className="text-gray-400 text-xs mt-8">
-        تاریخ ایجاد: {new Date(post.createdAt).toLocaleDateString("fa-IR")}
-      </div>
-      {/* بخش کامنت‌ها */}
-      <Suspense
-        fallback={
-          <div className="text-gray-500">در حال بارگذاری کامنت‌ها...</div>
-        }
-      >
-        <CommentsSection commentsPromise={commentsPromise} />
-      </Suspense>
-    </div>
-  );
+  return <SinglePost post={post} commentsPromise={commentsPromise} />;
 }

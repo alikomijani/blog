@@ -6,8 +6,15 @@ export interface JwtPayload {
   iat: number;
   exp: number;
 }
-export const MAX_ACCESS_TOKEN_AGE = 10 * 60;
-export const MAX_REFRESH_TOKEN_AGE = 7 * 24 * 60 * 60;
+
+export class JwtError extends Error {
+  constructor(message?: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = "JwtError";
+    Object.setPrototypeOf(this, JwtError.prototype);
+  }
+}
+
 export function createAccessToken(userID: number) {
   return jwt.sign({ userID }, process.env.JWT_ACCESS_SECRET!, {
     expiresIn: "10m",
@@ -22,7 +29,7 @@ export function createRefreshToken(userID: number) {
 
 export function verifyToken(
   token: string,
-  type: "ACCESS" | "REFRESH",
+  type: "ACCESS" | "REFRESH"
 ): JwtPayload {
   const secret =
     type === "ACCESS"
@@ -35,36 +42,36 @@ export function verifyToken(
     if (
       typeof decoded === "object" &&
       decoded !== null &&
-      typeof (decoded as any).userID === "number" &&
-      typeof (decoded as any).iat === "number" &&
-      typeof (decoded as any).exp === "number"
+      typeof (decoded as JwtPayload).userID === "number" &&
+      typeof (decoded as JwtPayload).iat === "number" &&
+      typeof (decoded as JwtPayload).exp === "number"
     ) {
       return decoded as JwtPayload;
     }
 
-    throw new Error("Malformed token payload");
-  } catch (err: any) {
-    if (err.name === "TokenExpiredError") {
-      throw new Error("TokenExpired");
+    throw new JwtError("Malformed token payload");
+  } catch (err) {
+    if (err instanceof Error && err.name === "TokenExpiredError") {
+      throw new JwtError("TokenExpired");
     }
-    if (err.name === "JsonWebTokenError") {
-      throw new Error("InvalidToken");
+    if (err instanceof Error && err.name === "JsonWebTokenError") {
+      throw new JwtError("InvalidToken");
     }
-    throw new Error("TokenVerificationFailed");
+    throw new JwtError("TokenVerificationFailed");
   }
 }
 
 export function getAccessToken(req: NextRequest) {
   const header = req.headers.get("authorization");
   if (!header) {
-    throw new Error("Authorization header not found");
+    throw new JwtError("Authorization header not found");
   }
   if (!header.startsWith("Bearer ")) {
-    throw new Error("Authorization header must start with 'Bearer '");
+    throw new JwtError("Authorization header must start with 'Bearer '");
   }
   const token = header.substring(7).trim();
   if (!token) {
-    throw new Error("Bearer token is empty");
+    throw new JwtError("Bearer token is empty");
   }
   return verifyToken(token, "ACCESS");
 }

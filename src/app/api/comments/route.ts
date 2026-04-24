@@ -1,5 +1,8 @@
 // app/api/comments/route.ts
-import { NextResponse } from "next/server";
+import { JwtError, verifyToken } from "@/backend/lib/jwt";
+import { ACCESS_TOKEN_NAME } from "@/backend/modules/user/config/constant";
+import newUserController from "@/backend/modules/user/controller/newUserController";
+import { NextRequest, NextResponse } from "next/server";
 
 type Comment = {
   author: {
@@ -12,7 +15,7 @@ type Comment = {
 };
 
 // Mock data (10 comments)
-let comments: Comment[] = [
+const comments: Comment[] = [
   {
     author: { userID: 1, firstName: "علی", lastName: "کریمی" },
     postID: 1,
@@ -66,7 +69,7 @@ let comments: Comment[] = [
 ];
 
 // GET → list comments (filter by postID ?)
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const postID = searchParams.get("postID");
 
@@ -79,35 +82,52 @@ export async function GET(req: Request) {
 
   return NextResponse.json({
     count: list.length,
-    list,
+    list: list.toReversed(),
   });
 }
 
 // POST → create a new comment
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
+export async function POST(req: NextRequest) {
+  const accessToken = req.cookies.get(ACCESS_TOKEN_NAME)?.value;
+  if (!accessToken) {
+    return NextResponse.json(
+      { message: "sending comment need authentication!" },
+      { status: 401 }
+    );
+  }
 
+  try {
+    const { userID } = verifyToken(accessToken, "ACCESS");
+    const userController = await newUserController();
+    const user = await userController.userModel.getUserByID(userID);
+    if (!user) {
+      return NextResponse.json({ message: "user not found" }, { status: 401 });
+    }
+    const body = await req.json();
+    if (!body.postID || !body.content) {
+      return NextResponse.json({ error: "invalid body" }, { status: 400 });
+    }
     const newComment: Comment = {
       author: {
-        userID: body.author?.userID ?? 0,
-        firstName: body.author?.firstName ?? "",
-        lastName: body.author?.lastName ?? "",
+        userID: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
       },
       postID: Number(body.postID),
-      content: body.content ?? "",
+      content: body.content,
     };
-
     comments.push(newComment);
-
     return NextResponse.json(
       {
-        message: "comment created",
-        comment: newComment,
+        newComment,
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (err) {
-    return NextResponse.json({ error: "invalid body" }, { status: 400 });
+    if (err instanceof JwtError) {
+      return NextResponse.json({ message: err.message }, { status: 401 });
+    }
+    console.error(err);
+    return NextResponse.json({ message: "server error" }, { status: 500 });
   }
 }

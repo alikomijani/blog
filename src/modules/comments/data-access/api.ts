@@ -1,10 +1,12 @@
-export function getComments(postID: number) {
+import { CommentListResponse } from "./model";
+
+export function getComments(postID: number): Promise<CommentListResponse> {
   return fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/comments?postID=${postID}`,
     {
       next: {
         revalidate: 5, // هر ۳ ثانیه یک بار رفرش شود
       },
-    },
+    }
   ).then((r) => r.json());
 }

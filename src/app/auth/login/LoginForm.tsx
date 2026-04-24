@@ -10,6 +10,7 @@ import {
   Stack,
 } from "@mui/material";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface LoginFormData {
   email: string;
@@ -22,14 +23,22 @@ export default function LoginForm() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>();
-
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const onSubmit = async (data: LoginFormData) => {
     const res = await fetch("/api/auth/login", {
       method: "POST",
       body: JSON.stringify(data),
     });
     const body = await res.json();
-    console.log(body);
+    if (res.ok) {
+      const nextPath = searchParams.get("nextPath");
+      if (nextPath) {
+        router.replace(nextPath);
+      } else {
+        router.replace("/posts");
+      }
+    }
   };
 
   return (
@@ -74,7 +83,9 @@ export default function LoginForm() {
               helperText={errors.password?.message}
               fullWidth
             />
-            <Link href={"/auth/register"}>حساب کاربری ندارید؟</Link>
+            <Link href={`/auth/register?${searchParams.toString()}`}>
+              حساب کاربری ندارید؟
+            </Link>
 
             <Button
               type="submit"

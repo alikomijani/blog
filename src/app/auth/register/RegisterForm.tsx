@@ -10,6 +10,7 @@ import {
   Stack,
 } from "@mui/material";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface RegisterFormData {
   firstName: string;
@@ -19,19 +20,25 @@ interface RegisterFormData {
 }
 
 export default function RegisterForm() {
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>();
-
+  const searchParams = useSearchParams();
   const onSubmit = async (data: RegisterFormData) => {
     const res = await fetch("/api/auth/register", {
       method: "POST",
       body: JSON.stringify(data),
     });
-    const body = await res.json();
-    console.log(body);
+    if (res.ok) {
+      router.replace(`/auth/login?${searchParams.toString()}`);
+    } else {
+      const body = await res.json();
+      console.log(body);
+    }
   };
 
   return (
@@ -93,7 +100,9 @@ export default function RegisterForm() {
               fullWidth
             />
 
-            <Link href={"/auth/login"}>از قبل اکانت دارید؟</Link>
+            <Link href={`/auth/login?${searchParams.toString()}`}>
+              از قبل اکانت دارید؟
+            </Link>
             <Button
               type="submit"
               variant="contained"
